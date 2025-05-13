@@ -1,16 +1,12 @@
-# This is a sample Python script.
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
 
-# Press Umschalt+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+db = SQLAlchemy()
 
+def create_app(db_uri=None):
+    app = Flask(__name__)
+    app.config['SQLALCHEMY_DATABASE_URI'] = db_uri or 'sqlite:///app.db'
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Strg+F8 to toggle the breakpoint.
-
-
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    db.init_app(app)
+    return app
