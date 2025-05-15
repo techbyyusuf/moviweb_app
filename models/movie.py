@@ -1,8 +1,7 @@
-from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import ForeignKey
 
-from main import db
+from app import db
 
 class Movie(db.Model):
     __tablename__ = 'movies'

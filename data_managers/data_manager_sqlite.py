@@ -1,6 +1,5 @@
-from flask_sqlalchemy import SQLAlchemy
 from data_managers.data_manager_interface import DataManagerInterface
-from main import db
+from app import db
 from models.user import User
 from models.movie import Movie
 from sqlalchemy import select, update
@@ -27,8 +26,6 @@ class SQLiteDataManager(DataManagerInterface):
 
 
     def add_movie(self, user_id, title, director, year, rating):
-        # users = data_manager.SQLiteDataManager
-        # if any(f{user_id} for user in users)
         new_movie = Movie(user_id=user_id,
                           name=title,
                           director=director,
@@ -54,17 +51,6 @@ class SQLiteDataManager(DataManagerInterface):
 
         db.session.commit()
 
-
-    # def update_movie(self, movie_id, title, director, year, rating):
-    #     stmt = (
-    #         update(Movie).where(Movie.movie_id == movie_id).values(title=title,
-    #                                                                director=director,
-    #                                                                year=year,
-    #                                                                rating=rating)
-    #     )
-    #
-    #     db.session.execute(stmt)
-    #     db.session.commit()
 
     def update_movie(self, movie):
         db_movie = db.session.get(Movie, movie.movie_id)

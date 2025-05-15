@@ -10,3 +10,13 @@ def create_app(db_uri=None):
 
     db.init_app(app)
     return app
+
+app = create_app()
+
+@app.route('/')
+def home():
+    return 'Welcome to MovieWeb App'
+
+
+if __name__ == '__main__':
+    app.run(debug=True)

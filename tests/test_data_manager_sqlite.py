@@ -13,10 +13,8 @@ if BASE_DIR not in sys.path:
 import pytest
 from models.user import User
 from models.movie import Movie
-from flask_sqlalchemy import SQLAlchemy
 from data_managers.data_manager_sqlite import SQLiteDataManager
-from data_managers.data_manager_interface import DataManagerInterface
-from main import create_app, db
+from app import create_app, db
 from sqlalchemy import select
 
 file_path = os.path.abspath("tests/test.db")
@@ -50,7 +48,7 @@ def test_add_user(test_app_context):
     data_manager = SQLiteDataManager()
     data_manager.add_user('Frank')
 
-    users = db.session.query(User).all()
+    users = db.session.scalars(select(User)).all()
     assert any(user.name == 'Frank' for user in users)
 
 
@@ -60,12 +58,12 @@ def test_delete_user(test_app_context):
 
     data_manager.add_user('TestUser1')
 
-    users = db.session.query(User).all()
+    users = db.session.scalars(select(User)).all()
     assert any(user.name == 'TestUser1' for user in users)
 
     data_manager.delete_user(1)
 
-    users = db.session.query(User).all()
+    users = db.session.scalars(select(User)).all()
     assert all('TestUser1' != user.name for user in users)
 
 
@@ -87,7 +85,7 @@ def test_add_movie(test_app_context):
     data_manager = SQLiteDataManager()
 
     data_manager.add_user('TestUser1')
-    users = db.session.query(User).all()
+    users = db.session.scalars(select(User)).all()
 
     user_id = users[0].id
 
@@ -106,7 +104,7 @@ def test_get_user_movies(test_app_context):
     data_manager = SQLiteDataManager()
 
     data_manager.add_user('TestUser')
-    users = db.session.query(User).all()
+    users = db.session.scalars(select(User)).all()
     user_id = users[0].id
 
     data_manager.add_movie(user_id, 'Titanic', 'Di Caprio', 1997, 9.9)
@@ -125,14 +123,14 @@ def test_delete_movie(test_app_context):
 
     data_manager.add_user('TestUser1')
 
-    users = db.session.query(User).all()
+    users = db.session.scalars(select(User)).all()
     user_id = users[0].id
 
     data_manager.add_movie(user_id, 'Titanic', 'Di Caprio', 1997, 9.9)
 
     data_manager.delete_movie(1,user_id)
 
-    movies = db.session.query(Movie).all()
+    movies = db.session.scalars(select(Movie)).all()
 
     assert all('Titanic' != movie.name for movie in movies)
 
@@ -141,11 +139,11 @@ def test_update_movie(test_app_context):
     data_manager = SQLiteDataManager()
 
     data_manager.add_user('TestUser1')
-    users = db.session.query(User).all()
+    users = db.session.scalars(select(User)).all()
     user_id = users[0].id
 
     data_manager.add_movie(user_id, 'Titanic', 'Di Caprio', 1997, 9.9)
-    movies = db.session.query(Movie).all()
+    movies = db.session.scalars(select(Movie)).all()
 
     assert any('Titanic' == movie.name for movie in movies)
 
