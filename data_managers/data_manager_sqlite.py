@@ -1,8 +1,8 @@
 from data_managers.data_manager_interface import DataManagerInterface
-from app import db
+from extensions import db
 from models.user import User
 from models.movie import Movie
-from sqlalchemy import select, update
+from sqlalchemy import select
 
 
 class SQLiteDataManager(DataManagerInterface):

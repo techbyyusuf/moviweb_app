@@ -1,31 +1,19 @@
-import sys
 import os
-
-from pydantic_core.core_schema import is_instance_schema
-
-# absoluter Pfad zum Projektverzeichnis (eine Ebene über "tests/")
-BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-
-# Projektverzeichnis zu sys.path hinzufügen
-if BASE_DIR not in sys.path:
-    sys.path.insert(0, BASE_DIR)
-
 import pytest
-from models.user import User
-from models.movie import Movie
+from app import create_app
 from data_managers.data_manager_sqlite import SQLiteDataManager
-from app import create_app, db
+from extensions import db
+from models.movie import Movie
+from models.user import User
 from sqlalchemy import select
 
-file_path = os.path.abspath("tests/test.db")
-sqlite_uri = f'sqlite:///{file_path}'
-app = create_app(sqlite_uri)
+TEST_DB = os.path.abspath("tests/test.db")
+TEST_DB_URI = f'sqlite:///{TEST_DB}'
 
 
 @pytest.fixture(scope='function', autouse=True)
 def test_app_context():
-    app.config['SQLALCHEMY_DATABASE_URI'] = file_path
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app = create_app(TEST_DB_URI)
 
     with app.app_context():
         db.drop_all()
@@ -34,7 +22,7 @@ def test_app_context():
 
 
 def test_db_file_created(test_app_context):
-    assert os.path.exists(file_path)
+    assert os.path.exists(TEST_DB)
 
 def test_users_movies_table_exists(test_app_context):
     inspector = db.inspect(db.engine)
