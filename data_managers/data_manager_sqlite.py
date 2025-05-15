@@ -2,6 +2,7 @@ from flask_sqlalchemy import SQLAlchemy
 from data_managers.data_manager_interface import DataManagerInterface
 from main import db
 from models.user import User
+from models.movie import Movie
 from sqlalchemy import select
 
 
@@ -19,18 +20,24 @@ class SQLiteDataManager(DataManagerInterface):
 
     def get_all_users(self):
         stmt = select(User.name)
-        user_names = db.session.execute(stmt)
-        return [row[0] for row in user_names]
+        return db.session.scalars(stmt).all()
 
-    def get_user_movies(self, user_id):
-        pass
+    def add_user_movie(self, user_id, title, director, year, rating):
+        # users = data_manager.SQLiteDataManager
+        # if any(f{user_id} for user in users)
+        new_movie = Movie(user_id=user_id,
+                          name=title,
+                          director=director,
+                          year=year,
+                          rating=rating)
+        db.session.add(new_movie)
+        db.session.commit()
 
     def delete_user_movie(self, user_id, id):
         pass
 
-    def add_user_movie(self, user_id, title, director, year, rating):
+    def get_user_movies(self, user_id):
         pass
-
 
     def update_user_movie(self, user_id, title, director, year, rating):
         pass

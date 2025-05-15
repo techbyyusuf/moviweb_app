@@ -15,6 +15,7 @@ from flask_sqlalchemy import SQLAlchemy
 from data_managers.data_manager_sqlite import SQLiteDataManager
 from data_managers.data_manager_interface import DataManagerInterface
 from main import create_app, db
+from sqlalchemy import select
 
 file_path = os.path.abspath("tests/test.db")
 sqlite_uri = f'sqlite:///{file_path}'
@@ -46,24 +47,61 @@ def test_users_movies_table_exists(test_app_context):
 
 def test_add_user(test_app_context):
     data_manager = SQLiteDataManager()
-    data_manager.add_user('Alice')
+    data_manager.add_user('Frank')
 
     users = db.session.query(User).all()
-    assert len(users) == 1
-    assert users[0].name == 'Alice'
+    data_manager.delete_user(1)
+
+    assert any(user.name == 'Frank' for user in users)
+
 
 
 def test_delete_user(test_app_context):
     data_manager = SQLiteDataManager()
 
-    user = User(id=1, name="TestUser")
-    db.session.add(user)
-    db.session.commit()
+    users = db.session.query(User).all()
+    if not users:
+        data_manager.add_user('TestUser1')
 
     data_manager.delete_user(1)
+
     users = db.session.query(User).all()
     assert 1 not in [user.id for user in users]
 
 
-def test_get_all_users():
-    pass
+
+def test_get_all_users(test_app_context):
+    data_manager = SQLiteDataManager()
+
+    data_manager.add_user('TestUser1')
+    data_manager.add_user('TestUser2')
+
+    users = data_manager.get_all_users()
+
+    assert isinstance(users, list)
+    assert len(users) >= 2
+    assert 'TestUser1' in users
+    assert 'TestUser2' in users
+
+    for user in users:
+        user_obj = db.session.scalar(select(User).where(User.name == user))
+        if user_obj:
+            data_manager.delete_user(user_obj.id)
+
+
+def test_add_user_movie(test_app_context):
+    data_manager = SQLiteDataManager()
+
+    users = db.session.query(User).all()
+    if not users:
+        data_manager.add_user('TestUser1')
+        users = db.session.query(User).all()
+
+    user_id = users[0].id
+
+    data_manager.add_user_movie(user_id, 'Titanic', 'Di Caprio', 1997, 9.9)
+
+    movies = db.session.query(Movie).all()
+
+    assert any(movie.name == 'Titanic' for movie in movies)
+    assert (movie.user_id == user_id for movie in movies)

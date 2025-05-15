@@ -13,6 +13,7 @@ class Movie(db.Model):
     name: Mapped[str] = mapped_column(nullable=False, unique= True)
     year: Mapped[str] = mapped_column()
     director : Mapped[str] = mapped_column()
+    rating : Mapped[float] = mapped_column()
 
 
 
