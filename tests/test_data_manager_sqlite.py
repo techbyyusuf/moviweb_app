@@ -1,6 +1,8 @@
 import sys
 import os
 
+from pydantic_core.core_schema import is_instance_schema
+
 # absoluter Pfad zum Projektverzeichnis (eine Ebene über "tests/")
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
@@ -105,3 +107,40 @@ def test_add_user_movie(test_app_context):
 
     assert any(movie.name == 'Titanic' for movie in movies)
     assert (movie.user_id == user_id for movie in movies)
+
+    data_manager.delete_user_movie(1)
+
+def test_get_user_movies(test_app_context):
+    data_manager = SQLiteDataManager()
+
+    user = db.session.query(User).first()
+
+    data_manager.add_user_movie(user.id, 'Titanic', 'Di Caprio', 1997, 9.9)
+    data_manager.add_user_movie(user.id, '22 Jump Street', 'De Niro', 2010, 9.2)
+
+    movies = data_manager.get_user_movies(user.id)
+
+    assert isinstance(movies, list)
+    assert len(movies) >= 2
+    assert any('Titanic' in movie.name for movie in movies)
+    assert any('22 Jump Street' in movie.name for movie in movies)
+
+
+def test_delete_user_movie(test_app_context):
+    data_manager = SQLiteDataManager()
+
+    users = db.session.query(User).all()
+    if not users:
+        data_manager.add_user('TestUser1')
+
+    user_id = users[0].id
+
+    movies = db.session.query(Movie).all()
+    if not movies:
+        data_manager.add_user_movie(user_id, 'Titanic', 'Di Caprio', 1997, 9.9)
+
+    data_manager.delete_user_movie(2)
+
+    movies = db.session.query(Movie).all()
+
+    assert ('Titanic' == movie.name for movie in movies)
