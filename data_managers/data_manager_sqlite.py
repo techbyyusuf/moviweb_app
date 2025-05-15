@@ -3,7 +3,7 @@ from data_managers.data_manager_interface import DataManagerInterface
 from main import db
 from models.user import User
 from models.movie import Movie
-from sqlalchemy import select
+from sqlalchemy import select, update
 
 
 class SQLiteDataManager(DataManagerInterface):
@@ -26,7 +26,7 @@ class SQLiteDataManager(DataManagerInterface):
         return db.session.scalars(stmt).all()
 
 
-    def add_user_movie(self, user_id, title, director, year, rating):
+    def add_movie(self, user_id, title, director, year, rating):
         # users = data_manager.SQLiteDataManager
         # if any(f{user_id} for user in users)
         new_movie = Movie(user_id=user_id,
@@ -43,17 +43,35 @@ class SQLiteDataManager(DataManagerInterface):
         return db.session.scalars(stmt).all()
 
 
-    def delete_user_movie(self, movie_id):
+    def delete_movie(self, movie_id, user_id):
         movie = db.session.get(Movie, movie_id)
 
-        db.session.delete(movie)                                                # first create get_user_movies
+        db.session.delete(movie)
 
-        user_id = movie.user_id
+        #user_id = movie.user_id                                                #to check after website is created
         if len(self.get_user_movies(user_id)) == 0:
             self.delete_user(user_id)
 
-        db.session.commit()                                                     # get user movies if == 0 delete user
+        db.session.commit()
 
 
-    def update_user_movie(self, user_id, title, director, year, rating):
-        pass
+    # def update_movie(self, movie_id, title, director, year, rating):
+    #     stmt = (
+    #         update(Movie).where(Movie.movie_id == movie_id).values(title=title,
+    #                                                                director=director,
+    #                                                                year=year,
+    #                                                                rating=rating)
+    #     )
+    #
+    #     db.session.execute(stmt)
+    #     db.session.commit()
+
+    def update_movie(self, movie):
+        db_movie = db.session.get(Movie, movie.movie_id)
+        if db_movie:
+            db_movie.name = movie.name
+            db_movie.director = movie.director
+            db_movie.year = movie.year
+            db_movie.rating = movie.rating
+
+            db.session.commit()
