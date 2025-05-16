@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>All Movies</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <header>
+        <h1>All Movies</h1>
+    </header>
+
+    <main>
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <ul class="flash-messages">
+              {% for message in messages %}
+                <li>{{ message }}</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        {% endwith %}
+
+        {% if movies %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Year</th>
+                        <th>Director</th>
+                        <th>Rating</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for movie in movies %}
+                    <tr>
+                        <td>{{ movie.name }}</td>
+                        <td>{{ movie.year }}</td>
+                        <td>{{ movie.director }}</td>
+                        <td>{{ movie.rating }}</td>
+                        <td>
+                            <!-- Optional: Action Buttons -->
+                            <a href="{{ url_for('update_movie', user_id=movie.user_id, movie_id=movie.id) }}">Edit</a>
+                            <a href="{{ url_for('delete_movie', user_id=movie.user_id, movie_id=movie.id) }}">Delete</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No movies found.</p>
+        {% endif %}
+    </main>
+</body>
+</html>

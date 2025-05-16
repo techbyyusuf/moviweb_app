@@ -65,8 +65,8 @@ def test_get_all_users(test_app_context):
 
     assert isinstance(users, list)
     assert len(users) >= 2
-    assert 'TestUser1' in users
-    assert 'TestUser2' in users
+    assert any('TestUser1' == user.name for user in users)
+    assert any('TestUser2' == user.name for user in users)
 
 
 def test_add_movie(test_app_context):

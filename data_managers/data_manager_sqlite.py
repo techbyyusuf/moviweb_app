@@ -8,9 +8,16 @@ from sqlalchemy import select
 class SQLiteDataManager(DataManagerInterface):
 
     def add_user(self, username: str):
+        users = db.session.scalars(select(User)).all()
+        user_exists = any(username == user.name for user in users)
+        if user_exists:
+            print(f"User '{username} already exists!")
+            return None
+
         new_user = User(name=username)
         db.session.add(new_user)
         db.session.commit()
+
 
 
     def delete_user(self, user_id):
@@ -21,8 +28,7 @@ class SQLiteDataManager(DataManagerInterface):
 
 
     def get_all_users(self):
-        stmt = select(User.name)
-        return db.session.scalars(stmt).all()
+        return db.session.scalars(select(User)).all()
 
 
     def add_movie(self, user_id, title, director, year, rating):
