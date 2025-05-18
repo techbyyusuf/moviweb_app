@@ -2,13 +2,24 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>MovieWeb Home</title>
+    <title>MovieWeb</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
     <header>
-        <h1>Welcome to MovieWeb</h1>
+        <h1>🎬 Welcome to MovieWeb</h1>
     </header>
-
+    <main>
+        <div class="hero">
+            <h2>Your personal movie manager</h2>
+            <p class="intro-text">
+                Manage your movie library with ease. Add users, assign movies, edit ratings and keep everything organized – all in one place.
+            </p>
+            <nav class="nav-buttons">
+                <a href="{{ url_for('list_users') }}" class="button">View All Users</a>
+                <a href="{{ url_for('add_user') }}" class="button">Add User</a>
+            </nav>
+        </div>
+    </main>
 </body>
 </html>

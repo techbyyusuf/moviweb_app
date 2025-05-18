@@ -1,0 +1,189 @@
+/* styles.css */
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(to right, #e0eafc, #cfdef3);
+    margin: 0;
+    padding: 0;
+    color: #333;
+}
+
+header {
+    background-color: #3a506b;
+    color: white;
+    padding: 1.5rem 2rem;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+main {
+    padding: 2rem;
+    max-width: 800px;
+    margin: auto;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    margin: 0;
+    font-size: 2rem;
+}
+
+nav {
+    margin-bottom: 1rem;
+}
+
+.button, button {
+    display: inline-block;
+    padding: 10px 16px;
+    background-color: #5bc0be;
+    color: white;
+    text-decoration: none;
+    border: none;
+    border-radius: 6px;
+    margin: 5px 0;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.button:hover, button:hover {
+    background-color: #3a9897;
+}
+
+.flash-message {
+    padding: 10px 15px;
+    background-color: #dff0d8;
+    color: #3c763d;
+    border-left: 5px solid #3c763d;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    font-weight: 500;
+}
+
+.user-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    background-color: #f7f9fc;
+    border: 1px solid #d3dce6;
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+}
+
+.user-item .button {
+    margin-left: 1rem;
+}
+
+.user-list {
+    list-style: none;
+    padding: 0;
+}
+
+.user-list li {
+    margin: 0.5rem 0;
+    padding: 0.5rem;
+    background-color: #f7f9fc;
+    border: 1px solid #d3dce6;
+    border-radius: 6px;
+}
+
+.user-list li a.button {
+    margin-left: 1rem;
+    font-size: 0.9rem;
+}
+
+.movie-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1.5rem;
+}
+
+.movie-table th, .movie-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.movie-table th {
+    background-color: #f0f4f8;
+    color: #333;
+}
+
+.movie-table td {
+    background-color: #fff;
+}
+
+form button {
+    background-color: #ef476f;
+}
+
+form button:hover {
+    background-color: #d4355d;
+}
+
+.hero {
+    background-image: url('/static/movie-banner.jpg');
+    background-size: cover;
+    background-position: center bottom;
+    background-repeat: no-repeat;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 3rem 2rem;
+    border-radius: 8px;
+    margin: 2rem auto;
+    max-width: 1000px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    color: white;
+    text-align: center;
+}
+
+.hero .intro-text {
+    font-size: 1.3rem;
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 1rem;
+    border-radius: 5px;
+    max-width: 600px;
+    margin-bottom: 1.5rem;
+}
+
+.hero .button {
+    background-color: #ff6b6b;
+    margin: 0.5rem;
+}
+
+.hero .button:hover {
+    background-color: #d94b4b;
+}
+
+.button, button {
+    display: inline-block;
+    padding: 10px 16px;
+    background-color: #5bc0be;
+    color: white;
+    text-decoration: none;
+    border: none;
+    border-radius: 6px;
+    margin: 5px 0;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: background-color 0.3s;
+}
+
+button {
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+form button {
+    background-color: #ef476f;
+}
+
+form button:hover {
+    background-color: #d4355d;
+}
+

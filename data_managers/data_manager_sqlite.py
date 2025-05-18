@@ -33,7 +33,7 @@ class SQLiteDataManager(DataManagerInterface):
 
     def add_movie(self, user_id, title, director, year, rating):
         new_movie = Movie(user_id=user_id,
-                          name=title,
+                          title=title,
                           director=director,
                           year=year,
                           rating=rating)
@@ -61,9 +61,14 @@ class SQLiteDataManager(DataManagerInterface):
     def update_movie(self, movie):
         db_movie = db.session.get(Movie, movie.movie_id)
         if db_movie:
-            db_movie.name = movie.name
+            db_movie.title = movie.title
             db_movie.director = movie.director
             db_movie.year = movie.year
             db_movie.rating = movie.rating
 
             db.session.commit()
+
+
+    def get_movie_by_id(self, movie_id):
+        stmt = select(Movie).where(Movie.movie_id == movie_id)
+        return db.session.scalars(stmt).first()

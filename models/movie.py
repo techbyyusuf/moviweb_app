@@ -7,9 +7,9 @@ class Movie(db.Model):
     __tablename__ = 'movies'
 
     movie_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.user_id'))
     user = relationship('User', back_populates='movies')
-    name: Mapped[str] = mapped_column(nullable=False, unique= True)
+    title: Mapped[str] = mapped_column(nullable=False, unique=True)
     year: Mapped[int] = mapped_column()
     director : Mapped[str] = mapped_column()
     rating : Mapped[float] = mapped_column()
