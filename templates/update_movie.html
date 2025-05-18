@@ -23,7 +23,8 @@
             <input type="text" id="title" name="title" value="{{ movie.title }}" required><br><br>
 
             <label for="year">Release Year:</label><br>
-            <input type="number" id="year" name="year" value="{{ movie.year }}" required><br><br>
+            <input type="number" id="year" name="year" value="{{ movie.year }}" max="{{ current_year }}" required><br><br>
+
 
             <label for="director">Director:</label><br>
             <input type="text" id="director" name="director" value="{{ movie.director }}" required><br><br>

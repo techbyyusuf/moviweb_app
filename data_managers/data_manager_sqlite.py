@@ -1,74 +1,109 @@
-from data_managers.data_manager_interface import DataManagerInterface
-from extensions import db
 from models.user import User
 from models.movie import Movie
+from utils.extensions import db
 from sqlalchemy import select
+from sqlalchemy.exc import SQLAlchemyError
+from data_managers.data_manager_interface import DataManagerInterface
+from datetime import datetime
 
 
 class SQLiteDataManager(DataManagerInterface):
 
-    def add_user(self, username: str):
-        users = db.session.scalars(select(User)).all()
-        user_exists = any(username == user.name for user in users)
-        if user_exists:
-            print(f"User '{username} already exists!")
-            return None
-
-        new_user = User(name=username)
-        db.session.add(new_user)
-        db.session.commit()
+    def add_user(self, name):
+        try:
+            new_user = User(name=name)
+            db.session.add(new_user)
+            db.session.commit()
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            print(f"Error adding user: {e}")
+            raise
 
 
 
     def delete_user(self, user_id):
-        user = db.session.get(User, user_id)
-                                                                                # get user movies if >0 don't delete
-        db.session.delete(user)
-        db.session.commit()
+        try:
+            user = db.session.get(User, user_id)
+            if user:
+                db.session.delete(user)
+                db.session.commit()
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            print(f"Error deleting user: {e}")
+            raise
 
 
     def get_all_users(self):
-        return db.session.scalars(select(User)).all()
+        try:
+            return db.session.scalars(select(User)).all()
+        except SQLAlchemyError as e:
+            print(f"Error retrieving users: {e}")
+            return []
 
 
     def add_movie(self, user_id, title, director, year, rating):
-        new_movie = Movie(user_id=user_id,
-                          title=title,
-                          director=director,
-                          year=year,
-                          rating=rating)
-        db.session.add(new_movie)
-        db.session.commit()
+        try:
+            new_movie = Movie(
+                user_id=user_id,
+                title=title,
+                director=director,
+                year=year,
+                rating=rating
+            )
+            db.session.add(new_movie)
+            db.session.commit()
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            print(f"Error adding movie: {e}")
+            raise
 
 
     def get_user_movies(self, user_id):
-        stmt = select(Movie).where(Movie.user_id == user_id)
-        return db.session.scalars(stmt).all()
+        try:
+            stmt = select(Movie).where(Movie.user_id == user_id)
+            return db.session.scalars(stmt).all()
+        except SQLAlchemyError as e:
+            print(f"Error retrieving user movies: {e}")
+            return []
 
 
     def delete_movie(self, movie_id, user_id):
-        movie = db.session.get(Movie, movie_id)
-
-        db.session.delete(movie)
-
-        #user_id = movie.user_id                                                #to check after website is created
-        if len(self.get_user_movies(user_id)) == 0:
-            self.delete_user(user_id)
-
-        db.session.commit()
+        try:
+            stmt = select(Movie).where(Movie.movie_id == movie_id, Movie.user_id == user_id)
+            movie = db.session.scalars(stmt).first()
+            if movie:
+                db.session.delete(movie)
+                db.session.commit()
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            print(f"Error deleting movie: {e}")
+            raise
 
 
     def update_movie(self, movie):
-        db_movie = db.session.get(Movie, movie.movie_id)
-        if db_movie:
-            db_movie.title = movie.title
-            db_movie.director = movie.director
-            db_movie.year = movie.year
-            db_movie.rating = movie.rating
+        try:
+            if int(movie.year) > datetime.now().year:
+                raise ValueError("Release year cannot be in the future.")
+            if 0 < float(movie.rating) < 10.0:
+                raise ValueError("Rating must be between 0 and 10.")
 
-            db.session.commit()
+            db_movie = db.session.get(Movie, movie.movie_id)
+            if db_movie:
+                db_movie.title = movie.title
+                db_movie.director = movie.director
+                db_movie.year = movie.year
+                db_movie.rating = movie.rating
+                db.session.commit()
+        except (SQLAlchemyError, ValueError) as e:
+            db.session.rollback()
+            print(f"Error updating movie: {e}")
+            raise
 
 
     def get_movie_by_id(self, movie_id):
-        stmt = select(Movie).where(Movie.movie_id == movie_id)
-        return db.session.scalars(stmt).first()
+        try:
+            stmt = select(Movie).where(Movie.movie_id == movie_id)
+            return db.session.scalars(stmt).first()
+        except SQLAlchemyError as e:
+            print(f"Error retrieving movie by ID: {e}")
+            return None

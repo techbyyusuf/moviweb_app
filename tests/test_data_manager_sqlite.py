@@ -2,7 +2,7 @@ import os
 import pytest
 from app import create_app
 from data_managers.data_manager_sqlite import SQLiteDataManager
-from extensions import db
+from utils.extensions import db
 from models.movie import Movie
 from models.user import User
 from sqlalchemy import select

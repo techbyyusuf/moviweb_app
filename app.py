@@ -1,9 +1,10 @@
 import os
-from flask import Flask, flash, render_template, request, url_for, redirect
-from extensions import db
-from data_managers.data_manager_sqlite import SQLiteDataManager, Movie
+from flask import abort, Flask, flash, render_template, request, url_for, redirect
+from utils.extensions import db
+from data_managers.data_manager_sqlite import SQLiteDataManager, User, Movie
 from dotenv import load_dotenv
 from utils.omdb_api import fetch_movie_details
+from datetime import datetime
 
 
 load_dotenv()
@@ -43,41 +44,47 @@ def user_movies(user_id):
     return render_template('movies.html', movies=movies, user_id=user_id)
 
 
-@app.route('/add_user', methods = ['GET', 'POST'])
+@app.route('/add_user', methods=['GET', 'POST'])
 def add_user():
     if request.method == 'POST':
-        username = request.form.get('name')
-        data_manager.add_user(username)
-        flash(f"User '{username}' has been added!")
-
-        return redirect(url_for('list_users'))
-
+        try:
+            username = request.form.get('name')
+            data_manager.add_user(username)
+            flash(f"User '{username}' has been added!")
+            return redirect(url_for('list_users'))
+        except Exception as e:
+            print(f"Error adding user: {e}")
+            flash("An error occurred while adding the user.")
+            return redirect(url_for('add_user'))
     return render_template('add_user.html')
+
 
 @app.route('/users/<user_id>/add_movie', methods=['GET', 'POST'])
 def add_movie(user_id):
+    user = db.session.get(User, user_id)
+    if not user:
+        abort(404)
+
     if request.method == 'POST':
-        title = request.form.get('title')
-        movie_data = fetch_movie_details(title)
-
-        if movie_data:
-            year = movie_data.get('Year')
-            director = movie_data.get('Director')
-            rating = movie_data.get('imdbRating')
-
+        try:
+            title = request.form.get('title')
+            movie_data = fetch_movie_details(title)
+            if not movie_data:
+                flash("Movie not found in OMDb.")
+                return render_template('add_movie.html', user_id=user_id)
             data_manager.add_movie(
-                title=title,
+                title=movie_data.get('Title'),
                 user_id=user_id,
-                year=year,
-                director=director,
-                rating=rating
+                year=movie_data.get('Year'),
+                director=movie_data.get('Director'),
+                rating=movie_data.get('imdbRating')
             )
-
             flash(f"Movie '{title}' has been added!")
             return redirect(url_for('user_movies', user_id=user_id))
-        else:
-            flash("Movie not found in OMDb.")
-
+        except Exception as e:
+            print(f"Error adding movie: {e}")
+            flash("An error occurred while adding the movie.")
+            return render_template('add_movie.html', user_id=user_id)
     return render_template('add_movie.html', user_id=user_id)
 
 
@@ -97,21 +104,42 @@ def update_movie(user_id, movie_id):
             rating=rating
         )
 
-        data_manager.update_movie(movie)
-        flash(f"Movie '{title}' has been updated!")
+        try:
+            if int(year) > datetime.now().year:
+                raise ValueError("Release year cannot be in the future.")
+            if not (0 <= float(rating) <= 10):
+                raise ValueError("Rating must be between 0 and 10.")
 
-        return  redirect(url_for('user_movies', user_id=user_id))
+            data_manager.update_movie(movie)
+            flash(f"Movie '{title}' has been updated!")
+            return redirect(url_for('user_movies', user_id=user_id))
+
+        except ValueError as ve:
+            flash(str(ve))
+        except Exception as e:
+            flash("An error occurred while updating the movie.")
+            print(f"Update Error: {e}")
 
     movie = data_manager.get_movie_by_id(movie_id)
-    return render_template('update_movie.html', user_id=user_id, movie=movie)
+    if not movie:
+        abort(404)
 
+    return render_template(
+        'update_movie.html',
+        user_id=user_id,
+        movie=movie,
+        current_year=datetime.now().year
+    )
 
 
 @app.route('/users/<user_id>/delete_movie/<movie_id>', methods=['POST'])
-def delete_movie(user_id,movie_id):
-    data_manager.delete_movie(user_id=user_id, movie_id=movie_id)
-    flash("Movie has been deleted!")
-
+def delete_movie(user_id, movie_id):
+    try:
+        data_manager.delete_movie(user_id=user_id, movie_id=movie_id)
+        flash("Movie has been deleted!")
+    except Exception as e:
+        print(f"Error deleting movie: {e}")
+        flash("An error occurred while deleting the movie.")
     return redirect(url_for('user_movies', user_id=user_id))
 
 
