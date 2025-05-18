@@ -1,15 +1,19 @@
-from models.user import User
-from models.movie import Movie
-from utils.extensions import db
+from datetime import datetime
+
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
+
 from data_managers.data_manager_interface import DataManagerInterface
-from datetime import datetime
+from models.movie import Movie
+from models.user import User
+from utils.extensions import db
 
 
 class SQLiteDataManager(DataManagerInterface):
+    """SQLite implementation of the DataManagerInterface."""
 
     def add_user(self, name):
+        """Add a new user to the database."""
         try:
             new_user = User(name=name)
             db.session.add(new_user)
@@ -19,9 +23,8 @@ class SQLiteDataManager(DataManagerInterface):
             print(f"Error adding user: {e}")
             raise
 
-
-
     def delete_user(self, user_id):
+        """Delete a user by ID from the database."""
         try:
             user = db.session.get(User, user_id)
             if user:
@@ -32,16 +35,16 @@ class SQLiteDataManager(DataManagerInterface):
             print(f"Error deleting user: {e}")
             raise
 
-
     def get_all_users(self):
+        """Retrieve all users from the database."""
         try:
             return db.session.scalars(select(User)).all()
         except SQLAlchemyError as e:
             print(f"Error retrieving users: {e}")
             return []
 
-
     def add_movie(self, user_id, title, director, year, rating):
+        """Add a new movie to a user's collection."""
         try:
             new_movie = Movie(
                 user_id=user_id,
@@ -57,8 +60,8 @@ class SQLiteDataManager(DataManagerInterface):
             print(f"Error adding movie: {e}")
             raise
 
-
     def get_user_movies(self, user_id):
+        """Retrieve all movies for a specific user."""
         try:
             stmt = select(Movie).where(Movie.user_id == user_id)
             return db.session.scalars(stmt).all()
@@ -66,8 +69,8 @@ class SQLiteDataManager(DataManagerInterface):
             print(f"Error retrieving user movies: {e}")
             return []
 
-
     def delete_movie(self, movie_id, user_id):
+        """Delete a movie by ID for a specific user."""
         try:
             stmt = select(Movie).where(Movie.movie_id == movie_id, Movie.user_id == user_id)
             movie = db.session.scalars(stmt).first()
@@ -79,12 +82,12 @@ class SQLiteDataManager(DataManagerInterface):
             print(f"Error deleting movie: {e}")
             raise
 
-
     def update_movie(self, movie):
+        """Update the information of an existing movie."""
         try:
             if int(movie.year) > datetime.now().year:
                 raise ValueError("Release year cannot be in the future.")
-            if 0 < float(movie.rating) < 10.0:
+            if not (0 < float(movie.rating) < 10.0):
                 raise ValueError("Rating must be between 0 and 10.")
 
             db_movie = db.session.get(Movie, movie.movie_id)
@@ -99,8 +102,8 @@ class SQLiteDataManager(DataManagerInterface):
             print(f"Error updating movie: {e}")
             raise
 
-
     def get_movie_by_id(self, movie_id):
+        """Retrieve a single movie by its ID."""
         try:
             stmt = select(Movie).where(Movie.movie_id == movie_id)
             return db.session.scalars(stmt).first()

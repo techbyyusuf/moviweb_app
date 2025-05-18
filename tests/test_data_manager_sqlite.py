@@ -1,11 +1,13 @@
 import os
+from sqlalchemy import select
+
 import pytest
+
 from app import create_app
 from data_managers.data_manager_sqlite import SQLiteDataManager
-from utils.extensions import db
 from models.movie import Movie
 from models.user import User
-from sqlalchemy import select
+from utils.extensions import db
 
 TEST_DB = os.path.abspath("tests/test.db")
 TEST_DB_URI = f'sqlite:///{TEST_DB}'
@@ -13,6 +15,7 @@ TEST_DB_URI = f'sqlite:///{TEST_DB}'
 
 @pytest.fixture(scope='function', autouse=True)
 def test_app_context():
+    """Provide a fresh app context and database for each test."""
     app = create_app(TEST_DB_URI)
 
     with app.app_context():
@@ -22,17 +25,20 @@ def test_app_context():
 
 
 def test_db_file_created(test_app_context):
+    """Check that the test database file is created."""
     assert os.path.exists(TEST_DB)
 
+
 def test_users_movies_table_exists(test_app_context):
+    """Check that 'users' and 'movies' tables exist in the DB."""
     inspector = db.inspect(db.engine)
     tables = inspector.get_table_names()
     assert "users" in tables
     assert "movies" in tables
 
 
-
 def test_add_user(test_app_context):
+    """Test adding a user to the database."""
     data_manager = SQLiteDataManager()
     data_manager.add_user('Frank')
 
@@ -40,12 +46,11 @@ def test_add_user(test_app_context):
     assert any(user.name == 'Frank' for user in users)
 
 
-
 def test_delete_user(test_app_context):
+    """Test deleting a user from the database."""
     data_manager = SQLiteDataManager()
 
     data_manager.add_user('TestUser1')
-
     users = db.session.scalars(select(User)).all()
     assert any(user.name == 'TestUser1' for user in users)
 
@@ -57,6 +62,7 @@ def test_delete_user(test_app_context):
 
 
 def test_get_all_users(test_app_context):
+    """Test retrieving all users."""
     data_manager = SQLiteDataManager()
 
     data_manager.add_user('TestUser1')
@@ -71,11 +77,11 @@ def test_get_all_users(test_app_context):
 
 
 def test_add_movie(test_app_context):
+    """Test adding a movie to a user's collection."""
     data_manager = SQLiteDataManager()
 
     data_manager.add_user('TestUser1')
     users = db.session.scalars(select(User)).all()
-
     user_id = users[0].user_id
 
     data_manager.add_movie(user_id, 'Titanic', 'Di Caprio', 1997, 9.9)
@@ -90,6 +96,7 @@ def test_add_movie(test_app_context):
 
 
 def test_get_user_movies(test_app_context):
+    """Test retrieving all movies for a user."""
     data_manager = SQLiteDataManager()
 
     data_manager.add_user('TestUser')
@@ -108,23 +115,22 @@ def test_get_user_movies(test_app_context):
 
 
 def test_delete_movie(test_app_context):
+    """Test deleting a movie from a user's collection."""
     data_manager = SQLiteDataManager()
 
     data_manager.add_user('TestUser1')
-
     users = db.session.scalars(select(User)).all()
     user_id = users[0].user_id
 
     data_manager.add_movie(user_id, 'Titanic', 'Di Caprio', 1997, 9.9)
-
-    data_manager.delete_movie(1,user_id)
+    data_manager.delete_movie(1, user_id)
 
     movies = db.session.scalars(select(Movie)).all()
-
     assert all('Titanic' != movie.title for movie in movies)
 
 
 def test_update_movie(test_app_context):
+    """Test updating a movie's details."""
     data_manager = SQLiteDataManager()
 
     data_manager.add_user('TestUser1')
@@ -132,13 +138,10 @@ def test_update_movie(test_app_context):
     user_id = users[0].user_id
 
     data_manager.add_movie(user_id, 'Titanic', 'Di Caprio', 1997, 9.9)
-    movies = db.session.scalars(select(Movie)).all()
-
-    assert any('Titanic' == movie.title for movie in movies)
 
     update_movie = Movie(
-        movie_id = 1,
-        title= 'Updated title',
+        movie_id=1,
+        title='Updated title',
         director='Updated director',
         year=2024,
         rating=0.5
@@ -154,6 +157,7 @@ def test_update_movie(test_app_context):
 
 
 def test_get_movie_by_id(test_app_context):
+    """Test retrieving a movie by its ID."""
     data_manager = SQLiteDataManager()
 
     data_manager.add_user('TestUser1')
