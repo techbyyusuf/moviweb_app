@@ -30,6 +30,63 @@ with app.app_context():
 data_manager = SQLiteDataManager()
 
 
+def handle_add_movie_post(user_id):
+    """Process POST request to add a new movie for a user."""
+    try:
+        title = request.form.get('title')
+        movie_data = fetch_movie_details(title)
+        if not movie_data:
+            flash(f"Movie '{title}' not found in OMDb.")
+            return render_template('add_movie.html', user_id=user_id)
+        data_manager.add_movie(
+            title=movie_data.get('Title'),
+            user_id=user_id,
+            year=movie_data.get('Year') or "",
+            director=movie_data.get('Director') or "",
+            rating=movie_data.get('imdbRating')
+        )
+        flash(f"Movie '{title}' has been added!")
+        return redirect(url_for('user_movies', user_id=user_id))
+    except Exception as e:
+        print(f"Error adding movie: {e}")
+        flash("An error occurred while adding the movie.")
+        return render_template('add_movie.html', user_id=user_id)
+
+
+def handle_movie_update_post(user_id, movie_id):
+    """Process POST request to update a movie's data."""
+    title = request.form.get('title')
+    year = request.form.get('year')
+    director = request.form.get('director')
+    rating = request.form.get('rating')
+
+    movie = Movie(
+        movie_id=movie_id,
+        title=title,
+        year=year,
+        director=director,
+        rating=rating
+    )
+
+    try:
+        if int(year) > datetime.now().year:
+            raise ValueError("Release year cannot be in the future.")
+        if 1888 > int(year):
+            raise ValueError("Release year cannot be older then 1888.")
+        if not (0 <= float(rating) <= 10):
+            raise ValueError("Rating must be between 0 and 10.")
+
+        data_manager.update_movie(movie)
+        flash(f"Movie '{title}' has been updated!")
+        return redirect(url_for('user_movies', user_id=user_id))
+
+    except ValueError as ve:
+        flash(str(ve))
+    except Exception as e:
+        flash("An error occurred while updating the movie.")
+        print(f"Update Error: {e}")
+
+
 @app.route('/')
 def home():
     """Render the home page."""
@@ -79,29 +136,6 @@ def add_movie(user_id):
     return render_template('add_movie.html', user_id=user_id)
 
 
-def handle_add_movie_post(user_id):
-    """Process POST request to add a new movie for a user."""
-    try:
-        title = request.form.get('title')
-        movie_data = fetch_movie_details(title)
-        if not movie_data:
-            flash("Movie not found in OMDb.")
-            return render_template('add_movie.html', user_id=user_id)
-        data_manager.add_movie(
-            title=movie_data.get('Title'),
-            user_id=user_id,
-            year=movie_data.get('Year'),
-            director=movie_data.get('Director'),
-            rating=movie_data.get('imdbRating')
-        )
-        flash(f"Movie '{title}' has been added!")
-        return redirect(url_for('user_movies', user_id=user_id))
-    except Exception as e:
-        print(f"Error adding movie: {e}")
-        flash("An error occurred while adding the movie.")
-        return render_template('add_movie.html', user_id=user_id)
-
-
 @app.route('/users/<user_id>/update_movie/<movie_id>', methods=['GET', 'POST'])
 def update_movie(user_id, movie_id):
     """Handle GET or POST request to update a movie."""
@@ -118,38 +152,6 @@ def update_movie(user_id, movie_id):
         movie=movie,
         current_year=datetime.now().year
     )
-
-
-def handle_movie_update_post(user_id, movie_id):
-    """Process POST request to update a movie's data."""
-    title = request.form.get('title')
-    year = request.form.get('year')
-    director = request.form.get('director')
-    rating = request.form.get('rating')
-
-    movie = Movie(
-        movie_id=movie_id,
-        title=title,
-        year=year,
-        director=director,
-        rating=rating
-    )
-
-    try:
-        if int(year) > datetime.now().year:
-            raise ValueError("Release year cannot be in the future.")
-        if not (0 <= float(rating) <= 10):
-            raise ValueError("Rating must be between 0 and 10.")
-
-        data_manager.update_movie(movie)
-        flash(f"Movie '{title}' has been updated!")
-        return redirect(url_for('user_movies', user_id=user_id))
-
-    except ValueError as ve:
-        flash(str(ve))
-    except Exception as e:
-        flash("An error occurred while updating the movie.")
-        print(f"Update Error: {e}")
 
 
 @app.route('/users/<user_id>/delete_movie/<movie_id>', methods=['POST'])

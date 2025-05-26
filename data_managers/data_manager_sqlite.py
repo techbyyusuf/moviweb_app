@@ -18,9 +18,9 @@ class SQLiteDataManager(DataManagerInterface):
             new_user = User(name=name)
             db.session.add(new_user)
             db.session.commit()
-        except SQLAlchemyError as e:
+        except SQLAlchemyError:
             db.session.rollback()
-            print(f"Error adding user: {e}")
+            print(f"User name 'name' already exists.")
             raise
 
     def delete_user(self, user_id):
