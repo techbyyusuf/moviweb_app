@@ -20,7 +20,7 @@ class SQLiteDataManager(DataManagerInterface):
             db.session.commit()
         except SQLAlchemyError:
             db.session.rollback()
-            print(f"User name 'name' already exists.")
+            print(f"Username '{name}' already exists.")
             raise
 
     def delete_user(self, user_id):
@@ -30,9 +30,9 @@ class SQLiteDataManager(DataManagerInterface):
             if user:
                 db.session.delete(user)
                 db.session.commit()
-        except SQLAlchemyError as e:
+        except SQLAlchemyError:
             db.session.rollback()
-            print(f"Error deleting user: {e}")
+            print(f"User with id '{user_id}' does not exist.")
             raise
 
     def get_all_users(self):
@@ -55,13 +55,17 @@ class SQLiteDataManager(DataManagerInterface):
             )
             db.session.add(new_movie)
             db.session.commit()
-        except SQLAlchemyError as e:
+        except SQLAlchemyError:
             db.session.rollback()
-            print(f"Error adding movie: {e}")
+            print(f"Movie '{title}' could not be added to user {user_id}.")
             raise
 
     def get_user_movies(self, user_id):
         """Retrieve all movies for a specific user."""
+        user = db.session.get(User, user_id)
+        if not user:
+            print(f"User with id '{user_id}' does not exist.")
+            return []
         try:
             stmt = select(Movie).where(Movie.user_id == user_id)
             return db.session.scalars(stmt).all()
@@ -87,7 +91,9 @@ class SQLiteDataManager(DataManagerInterface):
         try:
             if int(movie.year) > datetime.now().year:
                 raise ValueError("Release year cannot be in the future.")
-            if not (0 < float(movie.rating) < 10.0):
+            if int(movie.year) < 1888:
+                raise ValueError("Release year cannot be older than 1888.")
+            if not (0 <= float(movie.rating) <= 10):
                 raise ValueError("Rating must be between 0 and 10.")
 
             db_movie = db.session.get(Movie, movie.movie_id)
@@ -97,6 +103,9 @@ class SQLiteDataManager(DataManagerInterface):
                 db_movie.year = movie.year
                 db_movie.rating = movie.rating
                 db.session.commit()
+
+            else:
+                raise ValueError("Movie not found.")
         except (SQLAlchemyError, ValueError) as e:
             db.session.rollback()
             print(f"Error updating movie: {e}")

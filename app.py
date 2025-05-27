@@ -71,8 +71,8 @@ def handle_movie_update_post(user_id, movie_id):
     try:
         if int(year) > datetime.now().year:
             raise ValueError("Release year cannot be in the future.")
-        if 1888 > int(year):
-            raise ValueError("Release year cannot be older then 1888.")
+        if int(movie.year) < 1888:
+            raise ValueError("Release year cannot be older than 1888.")
         if not (0 <= float(rating) <= 10):
             raise ValueError("Rating must be between 0 and 10.")
 
@@ -111,14 +111,14 @@ def user_movies(user_id):
 def add_user():
     """Handle user creation via form submission."""
     if request.method == 'POST':
+        username = request.form.get('name')
         try:
-            username = request.form.get('name')
             data_manager.add_user(username)
             flash(f"User '{username}' has been added!")
             return redirect(url_for('list_users'))
         except Exception as e:
             print(f"Error adding user: {e}")
-            flash("An error occurred while adding the user.")
+            flash(f"User '{username}' already exists!")
             return redirect(url_for('add_user'))
     return render_template('add_user.html')
 
